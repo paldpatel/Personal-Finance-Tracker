@@ -1,0 +1,71 @@
+<div class="page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Budgets</h1>
+        <p class="page-sub">Monthly spending limits</p>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <input type="month" [(ngModel)]="selectedMonth" (change)="load()" class="month-input" />
+        <button class="btn-primary" (click)="showForm=true; error=''">+ Set Budget</button>
+      </div>
+    </div>
+  
+    <div class="loading-state" *ngIf="loading"><div class="spinner-lg"></div><p>Loading…</p></div>
+  
+    <div class="empty-state" *ngIf="!loading && budgets.length === 0">
+      <p>No budgets set for this month.</p>
+      <button class="btn-primary" (click)="showForm=true">Set your first budget</button>
+    </div>
+  
+    <div class="budget-list" *ngIf="!loading && budgets.length > 0">
+      <div class="budget-item" *ngFor="let b of budgets">
+        <div class="budget-item-header">
+          <span class="budget-name">
+            <span class="cat-dot" [style.background]="b.category_color"></span>
+            {{ b.category_name }}
+          </span>
+          <button class="icon-btn danger" (click)="delete(b.id)">🗑️</button>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" [class]="getPctClass(b)" [style.width.%]="getPct(b)"></div>
+        </div>
+        <div class="budget-footer">
+          <span class="budget-amounts">{{ fmt(getSpent(b)) }} <span>/ {{ fmt(b.monthly_limit) }}</span></span>
+          <span class="budget-pct" [class.danger]="getPct(b) >= 100">{{ getPct(b) | number:'1.0-0' }}%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="modal-backdrop" *ngIf="showForm" (click)="showForm=false">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Set Budget</h2>
+        <button class="modal-close" (click)="showForm=false">✕</button>
+      </div>
+      <div class="alert error" *ngIf="error" style="margin:16px 24px 0">{{ error }}</div>
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <div class="field">
+          <label>Category</label>
+          <select formControlName="category_id">
+            <option value="">— Select category —</option>
+            <option *ngFor="let c of expenseCategories()" [value]="c.id">{{ c.name }}</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Monthly Limit (₹)</label>
+            <input type="number" formControlName="monthly_limit" placeholder="5000" min="1" />
+          </div>
+          <div class="field">
+            <label>Month</label>
+            <input type="month" formControlName="month_year" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-ghost" (click)="showForm=false">Cancel</button>
+          <button type="submit" class="btn-primary" [disabled]="form.invalid || loading">Save budget</button>
+        </div>
+      </form>
+    </div>
+  </div>

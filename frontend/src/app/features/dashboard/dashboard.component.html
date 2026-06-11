@@ -1,0 +1,64 @@
+<div class="page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-sub">Your financial overview</p>
+      </div>
+      <div class="month-picker">
+        <input type="month" [(ngModel)]="selectedMonth" (change)="load()" class="month-input" />
+      </div>
+    </div>
+  
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner-lg"></div><p>Loading dashboard…</p>
+    </div>
+  
+    <ng-container *ngIf="!loading && data">
+      <div class="cards-row">
+        <div class="summary-card income">
+          <span class="card-label">Income</span>
+          <span class="card-amount">{{ fmt(data.summary.income) }}</span>
+          <span class="card-icon">↑</span>
+        </div>
+        <div class="summary-card expense">
+          <span class="card-label">Expenses</span>
+          <span class="card-amount">{{ fmt(data.summary.expense) }}</span>
+          <span class="card-icon">↓</span>
+        </div>
+        <div class="summary-card balance" [class.negative]="data.summary.balance < 0">
+          <span class="card-label">Balance</span>
+          <span class="card-amount">{{ fmt(data.summary.balance) }}</span>
+          <span class="card-icon">◎</span>
+        </div>
+      </div>
+  
+      <div class="charts-row">
+        <div class="chart-card">
+          <h3>Spending by Category</h3>
+          <div class="chart-wrap" *ngIf="data.spendingByCategory.length > 0"><canvas #donutCanvas></canvas></div>
+          <div class="empty-chart" *ngIf="data.spendingByCategory.length === 0">No expense data this month</div>
+        </div>
+        <div class="chart-card">
+          <h3>6-Month Trend</h3>
+          <div class="chart-wrap" *ngIf="data.monthlyTrend.length > 0"><canvas #trendCanvas></canvas></div>
+          <div class="empty-chart" *ngIf="data.monthlyTrend.length === 0">No trend data yet</div>
+        </div>
+      </div>
+  
+      <div class="table-card" *ngIf="data.spendingByCategory.length > 0">
+        <h3>Category Breakdown</h3>
+        <table class="data-table">
+          <thead><tr><th>Category</th><th style="text-align:right">Spent</th><th style="text-align:right">% of Total</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let cat of data.spendingByCategory">
+              <td><span class="cat-dot" [style.background]="cat.category_color"></span>{{ cat.category_name }}</td>
+              <td style="text-align:right;font-weight:600">{{ fmt(cat.total) }}</td>
+              <td style="text-align:right;color:#64748b">
+                {{ data.summary.expense > 0 ? ((cat.total / data.summary.expense) * 100 | number:'1.1-1') + '%' : '—' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+  </div>

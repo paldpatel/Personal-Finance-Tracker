@@ -1,0 +1,95 @@
+<div class="page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Transactions</h1>
+        <p class="page-sub">{{ transactions.length }} records</p>
+      </div>
+      <button class="btn-primary" (click)="openNew()">+ Add</button>
+    </div>
+  
+    <div class="filters-bar">
+      <select [(ngModel)]="filterType" (change)="load()" class="filter-input">
+        <option value="">All types</option>
+        <option value="income">Income</option>
+        <option value="expense">Expense</option>
+      </select>
+      <input type="date" [(ngModel)]="filterStart" (change)="load()" class="filter-input" />
+      <input type="date" [(ngModel)]="filterEnd" (change)="load()" class="filter-input" />
+      <button class="btn-ghost" (click)="filterType=''; filterStart=''; filterEnd=''; load()">Clear</button>
+    </div>
+  
+    <div class="table-card">
+      <div class="loading-inline" *ngIf="loading"><span class="spinner-sm"></span> Loading…</div>
+      <div class="empty-state" *ngIf="!loading && transactions.length === 0">
+        <p>No transactions yet.</p>
+        <button class="btn-primary" (click)="openNew()">Add your first transaction</button>
+      </div>
+      <table class="data-table" *ngIf="!loading && transactions.length > 0">
+        <thead>
+          <tr><th>Date</th><th>Description</th><th>Category</th><th>Type</th><th style="text-align:right">Amount</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let txn of transactions">
+            <td class="date-cell">{{ txn.txn_date | date:'dd MMM yyyy' }}</td>
+            <td>{{ txn.description || '—' }}</td>
+            <td>
+              <span class="cat-tag" [style.background]="(txn.category_color || '#94a3b8') + '22'" [style.color]="txn.category_color || '#94a3b8'">
+                {{ txn.category_name || 'Uncategorized' }}
+              </span>
+            </td>
+            <td><span class="type-badge" [class.income]="txn.type==='income'" [class.expense]="txn.type==='expense'">{{ txn.type }}</span></td>
+            <td style="text-align:right;font-weight:600" [class.text-green]="txn.type==='income'" [class.text-red]="txn.type==='expense'">
+              {{ txn.type === 'income' ? '+' : '-' }}{{ fmt(txn.amount) }}
+            </td>
+            <td class="actions-cell">
+              <button class="icon-btn" (click)="openEdit(txn)">✏️</button>
+              <button class="icon-btn danger" (click)="delete(txn.id)">🗑️</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <div class="modal-backdrop" *ngIf="showForm" (click)="showForm=false">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ editingId ? 'Edit' : 'Add' }} Transaction</h2>
+        <button class="modal-close" (click)="showForm=false">✕</button>
+      </div>
+      <div class="alert error" *ngIf="error" style="margin:16px 24px 0">{{ error }}</div>
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <div class="field-row">
+          <div class="field">
+            <label>Type</label>
+            <select formControlName="type"><option value="income">Income</option><option value="expense">Expense</option></select>
+          </div>
+          <div class="field">
+            <label>Amount (₹)</label>
+            <input type="number" formControlName="amount" placeholder="0.00" min="0.01" step="0.01" />
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Category</label>
+            <select formControlName="category_id">
+              <option [ngValue]="null">— No category —</option>
+              <option *ngFor="let c of catsForType()" [ngValue]="c.id">{{ c.name }}</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Date</label>
+            <input type="date" formControlName="txn_date" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Description</label>
+          <input type="text" formControlName="description" placeholder="Optional note" />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-ghost" (click)="showForm=false">Cancel</button>
+          <button type="submit" class="btn-primary" [disabled]="form.invalid || loading">{{ editingId ? 'Save changes' : 'Add transaction' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>

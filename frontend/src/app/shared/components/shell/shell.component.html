@@ -1,0 +1,72 @@
+<div class="app-shell">
+    <aside class="sidebar" [class.open]="sidebarOpen">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-icon">₹</span>
+          <span class="logo-text">FinanceTrack</span>
+        </div>
+        <button class="sidebar-close" (click)="sidebarOpen = false">✕</button>
+      </div>
+  
+      <nav class="sidebar-nav">
+        <a routerLink="/dashboard" routerLinkActive="active" (click)="sidebarOpen=false">
+          <span class="nav-icon">📊</span> Dashboard
+        </a>
+        <a routerLink="/transactions" routerLinkActive="active" (click)="sidebarOpen=false">
+          <span class="nav-icon">💳</span> Transactions
+        </a>
+        <a routerLink="/budgets" routerLinkActive="active" (click)="sidebarOpen=false">
+          <span class="nav-icon">🎯</span> Budgets
+        </a>
+        <a routerLink="/categories" routerLinkActive="active" (click)="sidebarOpen=false">
+          <span class="nav-icon">🏷️</span> Categories
+        </a>
+      </nav>
+  
+      <div class="sidebar-footer">
+        <div class="status-badge" [class.offline]="!isOnline">
+          <span class="status-dot"></span>
+          {{ isOnline ? 'Online' : 'Offline – changes saved locally' }}
+        </div>
+        <div class="user-info">
+          <span class="user-avatar">{{ (user?.first_name?.[0] || user?.email?.[0] || '?').toUpperCase() }}</span>
+          <div class="user-details">
+            <span class="user-name">{{ user?.first_name || 'User' }}</span>
+            <span class="user-email">{{ user?.email }}</span>
+          </div>
+        </div>
+        <button class="logout-btn" (click)="logout()">Sign out</button>
+      </div>
+    </aside>
+  
+    <div class="overlay" [class.visible]="sidebarOpen" (click)="sidebarOpen=false"></div>
+  
+    <div class="main-area">
+      <header class="topbar">
+        <button class="menu-btn" (click)="sidebarOpen = true">☰</button>
+        <div class="topbar-right">
+          <div class="notif-wrapper">
+            <button class="notif-btn" (click)="showNotifications = !showNotifications">
+              🔔
+              <span class="notif-badge" *ngIf="notifications.length > 0">{{ notifications.length }}</span>
+            </button>
+            <div class="notif-panel" *ngIf="showNotifications">
+              <div class="notif-header">
+                <span>Notifications</span>
+                <button (click)="clearNotifications()">Clear all</button>
+              </div>
+              <div class="notif-empty" *ngIf="notifications.length === 0">No notifications</div>
+              <div class="notif-item" *ngFor="let n of notifications">
+                <span class="notif-msg">{{ getNotificationMessage(n) }}</span>
+                <span class="notif-time">{{ n.timestamp | date:'shortTime' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+  
+      <main class="page-content">
+        <router-outlet />
+      </main>
+    </div>
+  </div>

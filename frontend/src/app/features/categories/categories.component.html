@@ -1,0 +1,90 @@
+<div class="page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Categories</h1>
+        <p class="page-sub">Organise your income and expenses</p>
+      </div>
+      <button class="btn-primary" (click)="openNew()">+ Add Category</button>
+    </div>
+  
+    <div class="loading-state" *ngIf="loading"><div class="spinner-lg"></div><p>Loading…</p></div>
+  
+    <ng-container *ngIf="!loading">
+      <div class="table-card" style="margin-bottom:16px">
+        <h3>Income Categories ({{ income().length }})</h3>
+        <div class="empty-state" *ngIf="income().length === 0" style="padding:24px">
+          <p>No income categories yet.</p>
+        </div>
+        <table class="data-table" *ngIf="income().length > 0">
+          <thead><tr><th>Name</th><th>Color</th><th></th></tr></thead>
+          <tbody>
+            <tr *ngFor="let c of income()">
+              <td><span class="cat-dot" [style.background]="c.color"></span>{{ c.name }}</td>
+              <td><span style="font-family:monospace;color:#64748b;font-size:12px">{{ c.color }}</span></td>
+              <td class="actions-cell">
+                <button class="icon-btn" (click)="openEdit(c)">✏️</button>
+                <button class="icon-btn danger" (click)="delete(c.id)">🗑️</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+  
+      <div class="table-card">
+        <h3>Expense Categories ({{ expense().length }})</h3>
+        <div class="empty-state" *ngIf="expense().length === 0" style="padding:24px">
+          <p>No expense categories yet.</p>
+        </div>
+        <table class="data-table" *ngIf="expense().length > 0">
+          <thead><tr><th>Name</th><th>Color</th><th></th></tr></thead>
+          <tbody>
+            <tr *ngFor="let c of expense()">
+              <td><span class="cat-dot" [style.background]="c.color"></span>{{ c.name }}</td>
+              <td><span style="font-family:monospace;color:#64748b;font-size:12px">{{ c.color }}</span></td>
+              <td class="actions-cell">
+                <button class="icon-btn" (click)="openEdit(c)">✏️</button>
+                <button class="icon-btn danger" (click)="delete(c.id)">🗑️</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+  </div>
+  
+  <div class="modal-backdrop" *ngIf="showForm" (click)="showForm=false">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ editingId ? 'Edit' : 'New' }} Category</h2>
+        <button class="modal-close" (click)="showForm=false">✕</button>
+      </div>
+      <div class="alert error" *ngIf="error" style="margin:16px 24px 0">{{ error }}</div>
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <div class="field-row">
+          <div class="field">
+            <label>Name</label>
+            <input type="text" formControlName="name" placeholder="e.g. Groceries" />
+          </div>
+          <div class="field">
+            <label>Type</label>
+            <select formControlName="type"><option value="income">Income</option><option value="expense">Expense</option></select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Color</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+            <button type="button" *ngFor="let col of colors"
+              (click)="form.patchValue({color: col})"
+              [style.background]="col"
+              [style.outline]="form.value.color === col ? '2px solid #0f172a' : 'none'"
+              style="width:28px;height:28px;border-radius:50%;border:2px solid white;cursor:pointer;outline-offset:2px">
+            </button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-ghost" (click)="showForm=false">Cancel</button>
+          <button type="submit" class="btn-primary" [disabled]="form.invalid || loading">{{ editingId ? 'Save changes' : 'Create category' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
